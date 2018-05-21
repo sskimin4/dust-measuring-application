@@ -11,23 +11,118 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import android.widget.Toast;
-  
+
+
 public class MainActivity extends Activity {
-    
-  Button btnOn, btnOff;
-  TextView txtArduino, txtString, txtStringLength, sensorView0, sensorView1;//, sensorView2, sensorView3;
+
+    public class AirQuality{
+        float pm10;
+        float pm25;
+      //  int pm10_stat;
+      //  int pm25_stat;
+      //  int stat;
+
+        public AirQuality(float pm10, float pm25){
+            this.pm10 = pm10;
+            this.pm25 = pm25;/*
+            if(pm10>100)
+                this.pm10_stat=0;
+            else if(pm10>50)
+                this.pm10_stat=1;
+            else if(pm10>30)
+                this.pm10_stat=2;
+            else if(pm10>15)
+                this.pm10_stat=3;
+            else if(pm10>=0)
+                this.pm10_stat=4;
+            else
+                this.pm10_stat=5;
+
+            if(pm25>50)
+                this.pm25_stat=0;
+            else if(pm25>25)
+                this.pm25_stat=1;
+            else if(pm25>15)
+                this.pm25_stat=2;
+            else if(pm25>5)
+                this.pm25_stat=3;
+            else if(pm25>=0)
+                this.pm25_stat=4;
+            else
+                this.pm25_stat=5;
+
+            if(this.pm10_stat<this.pm25_stat)
+                this.stat=this.pm10_stat;
+            else
+                this.stat=this.pm25_stat;*/
+            //this.stat=this.pm10_stat<this.pm25_stat?this.pm10_stat:this.pm25_stat;
+
+        }
+        private int pm10_stat(){        // WHO 기준 미세먼지 단계
+            if(pm10>100)
+                return  0;      // 매우 나쁨
+            else if(pm10>50)
+                return  1;      // 나쁨
+            else if(pm10>30)
+                return  2;      // 보통
+            else if(pm10>15)
+                return  3;      // 좋음
+            else if(pm10>=0)
+                return  4;      // 매우 좋음
+            else
+                return  5;      // default or error
+        }
+
+        private int pm25_stat(){        // WHO 기준 초미세먼지 단계
+            if(pm25>50)
+                return 0;       // 매우 나쁨
+            else if(pm25>25)
+                return 1;       // 나쁨
+            else if(pm25>15)
+                return 2;       // 보통
+            else if(pm25>5)
+                return 3;       // 좋음
+            else if(pm25>=0)
+                return 4;       // 매우 좋음
+            else
+                return 5;       // default or error
+        }
+
+        private int stat(){             // 미세먼지와 초미세먼지의 단계 중 더 안 좋은 단계
+            if(pm10_stat()<pm25_stat())
+                return pm10_stat();
+            else
+                return pm25_stat();
+        }
+
+    }
+
+    public static boolean isStringDouble(String s){
+        try{
+            Double.parseDouble(s);
+            return true;
+        }catch(NumberFormatException e){
+            return false;
+        }
+    }
+
+    //Button btnOn, btnOff;
+  TextView txtArduino, txtString, txtStringLength, sensorView0, sensorView1;//, statView;//, sensorView2, sensorView3;
   Handler bluetoothIn;
+  RelativeLayout View2;
 
   final int handlerState = 0;        				 //used to identify handler message
   private BluetoothAdapter btAdapter = null;
   private BluetoothSocket btSocket = null;
   private StringBuilder recDataString = new StringBuilder();
-   
+ // private ViewPager mPager;
+ // private LinearLayout mLayout;
+
+
   private ConnectedThread mConnectedThread;
     
   // SPP UUID service - this should work for most devices
@@ -35,23 +130,24 @@ public class MainActivity extends Activity {
   
   // String for MAC address
   private static String address;
-
 @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-  
+
     setContentView(R.layout.activity_main);
   
     //Link the buttons and textViews to respective views 
-    btnOn = (Button) findViewById(R.id.buttonOn);
-    btnOff = (Button) findViewById(R.id.buttonOff);
+    //btnOn = (Button) findViewById(R.id.buttonOn);
+    //btnOff = (Button) findViewById(R.id.buttonOff);
     txtString = (TextView) findViewById(R.id.txtString); 
     txtStringLength = (TextView) findViewById(R.id.testView1);   
     sensorView0 = (TextView) findViewById(R.id.sensorView0);
-    sensorView1 = (TextView) findViewById(R.id.sensorView1); 
+    sensorView1 = (TextView) findViewById(R.id.sensorView1);
+    View2 = (RelativeLayout) findViewById(R.id.back);
+    //statView = (TextView) findViewById(R.id.statView);
     //sensorView2 = (TextView) findViewById(R.id.sensorView2);
     //sensorView3 = (TextView) findViewById(R.id.sensorView3);
-
+   // mPageMark = (LinearLayout)findViewById(R.id.page_mark);
 
     bluetoothIn = new Handler() {
         public void handleMessage(android.os.Message msg) {
@@ -67,38 +163,62 @@ public class MainActivity extends Activity {
 
                     int temp=-1;
                     int flag=1;
+                    float sen0=-1, sen1=-1;
                     if (recDataString.charAt(0) == '#')								//if it starts with # we know it is what we are looking for
                     {
-                        //if(1)
-                        //String sensor0;
-                        //String sensor1;
                         flag=1;
                         if (recDataString.charAt(1) < '0' || recDataString.charAt(1) > '9')
                             flag=0;
                             if (flag == 1) {
                                 for (int i = 1;i< recDataString.length(); i++) {
                                     if (recDataString.charAt(i) == '+') {
-                                        String sensor0 = recDataString.substring(1, i);//get sensor value from string between indices 1-5
+                                        String sensor0 = recDataString.substring(1, i);//get sensor value from string between indices 1-i
                                         temp = i;
-                                        sensorView0.setText(" Sensor 0 (P2.5) = " + sensor0);
+
+                                        if(isStringDouble(sensor0)) {
+                                            sensorView0.setText(" 초미세먼지 (P2.5) = " + sensor0+"㎍/㎥");
+                                            sen0 = Float.parseFloat(sensor0);
+                                        }
                                         break;
                                     }
 
                                 }
                                 for (int i = temp + 1; i< recDataString.length(); i++) {
                                     if (recDataString.charAt(i) == '+') {
-                                        String sensor1 = recDataString.substring(temp + 1, i);//get sensor value from string between indices 1-5
+                                        String sensor1 = recDataString.substring(temp + 1, i);//get sensor value from string between indices temp+1 - i
                                         temp = i;
-                                        sensorView1.setText(" Sensor 1 (P10) = " + sensor1);
+
+                                        if(isStringDouble(sensor1)) {
+                                            sensorView1.setText(" 미세먼지 (P10) = " + sensor1+"㎍/㎥");
+                                            sen1 = Float.parseFloat(sensor1);
+                                        }
                                         break;
                                     }
                                 }
+
+     //                           ImageView iv=new ImageView(getApplicationContext());
+                                //statView.setText(value.stat);
+
                                 //update the textviews with sensor values
                             }
                     }
+
                     recDataString.delete(0,recDataString.length()); 					//clear all string data
-                   // strIncom =" ";
+                    // strIncom =" ";
                     dataInPrint = " ";
+                    AirQuality value = new AirQuality(sen0,sen1);
+                    if(value.stat()==4)
+                        View2.setBackgroundResource(R.drawable.best);
+                    else if(value.stat()==3)
+                        View2.setBackgroundResource(R.drawable.good);
+                    else if(value.stat()==2)
+                        View2.setBackgroundResource(R.drawable.botong);
+                    else if(value.stat()==1)
+                        View2.setBackgroundResource(R.drawable.bad);
+                    else if(value.stat()==0)
+                        View2.setBackgroundResource(R.drawable.real_bad);
+
+                    value=null;
                 }            
             }
         }
@@ -109,7 +229,7 @@ public class MainActivity extends Activity {
     
     
   // Set up onClick listeners for buttons to send 1 or 0 to turn on/off LED
-    btnOff.setOnClickListener(new OnClickListener() {
+    /*btnOff.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
         mConnectedThread.write("0");    // Send "0" via Bluetooth
         Toast.makeText(getBaseContext(), "Turn off LED", Toast.LENGTH_SHORT).show();
@@ -121,7 +241,7 @@ public class MainActivity extends Activity {
         mConnectedThread.write("1");    // Send "1" via Bluetooth
         Toast.makeText(getBaseContext(), "Turn on LED", Toast.LENGTH_SHORT).show();
       }
-    });
+    });*/
   }
 
    
