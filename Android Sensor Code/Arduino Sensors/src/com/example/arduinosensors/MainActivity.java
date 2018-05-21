@@ -19,7 +19,6 @@ import android.widget.Toast;
   
 public class MainActivity extends Activity {
     
-  Button btnOn, btnOff;
   TextView txtArduino, txtString, txtStringLength, sensorView0, sensorView1;//, sensorView2, sensorView3;
   Handler bluetoothIn;
 
@@ -43,8 +42,6 @@ public class MainActivity extends Activity {
     setContentView(R.layout.activity_main);
   
     //Link the buttons and textViews to respective views 
-    btnOn = (Button) findViewById(R.id.buttonOn);
-    btnOff = (Button) findViewById(R.id.buttonOff);
     txtString = (TextView) findViewById(R.id.txtString); 
     txtStringLength = (TextView) findViewById(R.id.testView1);   
     sensorView0 = (TextView) findViewById(R.id.sensorView0);
@@ -109,19 +106,6 @@ public class MainActivity extends Activity {
     
     
   // Set up onClick listeners for buttons to send 1 or 0 to turn on/off LED
-    btnOff.setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
-        mConnectedThread.write("0");    // Send "0" via Bluetooth
-        Toast.makeText(getBaseContext(), "Turn off LED", Toast.LENGTH_SHORT).show();
-      }
-    });
-  
-    btnOn.setOnClickListener(new OnClickListener() {
-      public void onClick(View v) { 
-        mConnectedThread.write("1");    // Send "1" via Bluetooth
-        Toast.makeText(getBaseContext(), "Turn on LED", Toast.LENGTH_SHORT).show();
-      }
-    });
   }
 
    
