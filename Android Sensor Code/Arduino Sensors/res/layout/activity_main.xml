@@ -24,22 +24,6 @@
         android:text=""
         android:textSize="15sp" />
 
-    <Button
-        android:id="@+id/buttonOn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="LED ON" />
-
-    <Button
-        android:id="@+id/buttonOff"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/buttonOn"
-        android:layout_alignParentRight="true"
-        android:text="LED OFF" />
-
     <TextView
         android:id="@+id/sensorView1"
         android:layout_width="wrap_content"
