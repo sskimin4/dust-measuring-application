@@ -20,63 +20,14 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
     public class AirQuality{
-        float pm10;
         float pm25;
-      //  int pm10_stat;
-      //  int pm25_stat;
-      //  int stat;
-
-        public AirQuality(float pm10, float pm25){
+        float pm10;
+     
+        public AirQuality(float pm25, float pm10){
+            this.pm25 = pm25;
             this.pm10 = pm10;
-            this.pm25 = pm25;/*
-            if(pm10>100)
-                this.pm10_stat=0;
-            else if(pm10>50)
-                this.pm10_stat=1;
-            else if(pm10>30)
-                this.pm10_stat=2;
-            else if(pm10>15)
-                this.pm10_stat=3;
-            else if(pm10>=0)
-                this.pm10_stat=4;
-            else
-                this.pm10_stat=5;
-
-            if(pm25>50)
-                this.pm25_stat=0;
-            else if(pm25>25)
-                this.pm25_stat=1;
-            else if(pm25>15)
-                this.pm25_stat=2;
-            else if(pm25>5)
-                this.pm25_stat=3;
-            else if(pm25>=0)
-                this.pm25_stat=4;
-            else
-                this.pm25_stat=5;
-
-            if(this.pm10_stat<this.pm25_stat)
-                this.stat=this.pm10_stat;
-            else
-                this.stat=this.pm25_stat;*/
-            //this.stat=this.pm10_stat<this.pm25_stat?this.pm10_stat:this.pm25_stat;
-
         }
-        private int pm10_stat(){        // WHO 기준 미세먼지 단계
-            if(pm10>100)
-                return  0;      // 매우 나쁨
-            else if(pm10>50)
-                return  1;      // 나쁨
-            else if(pm10>30)
-                return  2;      // 보통
-            else if(pm10>15)
-                return  3;      // 좋음
-            else if(pm10>=0)
-                return  4;      // 매우 좋음
-            else
-                return  5;      // default or error
-        }
-
+     
         private int pm25_stat(){        // WHO 기준 초미세먼지 단계
             if(pm25>50)
                 return 0;       // 매우 나쁨
@@ -90,6 +41,21 @@ public class MainActivity extends Activity {
                 return 4;       // 매우 좋음
             else
                 return 5;       // default or error
+        }
+
+        private int pm10_stat(){        // WHO 기준 미세먼지 단계
+            if(pm10>100)
+                return  0;      // 매우 나쁨
+            else if(pm10>50)
+                return  1;      // 나쁨
+            else if(pm10>30)
+                return  2;      // 보통
+            else if(pm10>15)
+                return  3;      // 좋음
+            else if(pm10>=0)
+                return  4;      // 매우 좋음
+            else
+                return  5;      // default or error
         }
 
         private int stat(){             // 미세먼지와 초미세먼지의 단계 중 더 안 좋은 단계
