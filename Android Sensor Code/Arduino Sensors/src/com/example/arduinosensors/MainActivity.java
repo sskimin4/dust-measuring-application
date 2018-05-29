@@ -207,15 +207,16 @@ public class MainActivity extends Activity {
                     // strIncom =" ";
                     dataInPrint = " ";
                     AirQuality value = new AirQuality(sen0,sen1);
-                    if(value.stat()==4)
+                    int stat = value.stat();
+                    if(stat==4)
                         View2.setBackgroundResource(R.drawable.best);
-                    else if(value.stat()==3)
+                    else if(stat==3)
                         View2.setBackgroundResource(R.drawable.good);
-                    else if(value.stat()==2)
+                    else if(stat==2)
                         View2.setBackgroundResource(R.drawable.botong);
-                    else if(value.stat()==1)
+                    else if(stat==1)
                         View2.setBackgroundResource(R.drawable.bad);
-                    else if(value.stat()==0)
+                    else if(stat==0)
                         View2.setBackgroundResource(R.drawable.real_bad);
 
                     value=null;

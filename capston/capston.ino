@@ -4,7 +4,15 @@ float p10, p25;
 int error;
 
 SDS011 my_sds;
-float Value[4]={0,0,0,0};
+float Value[2]={0,0};
+String value1, value2;
+String integer1 = "";
+String decimal1 = "";
+String integer2 = "";
+String decimal2 = "";
+int i, flag, residue;
+int divisor = 64;
+String checkSumString = "";
 byte buffer[1024];
 byte bufferPosition;
 int blueTx=(uint8_t)D7;   //Tx (보내는핀 설정)at
@@ -18,45 +26,66 @@ void setup()
   mySerial.begin(9600); //블루투스 시리얼
   bufferPosition=0;
 }
+
 void loop()
 {
   error = my_sds.read(&p25, &p10);
   Value[0]=p25;
   Value[1]=p10;
+  checkSum();
   sendAndroidValues();
   
   delay(2000);
 }
-void sendAndroidValues()
- {
-  //puts # before the values so our app knows what to do with the data
-  
-  mySerial.print('#');
-  //for loop cycles through 4 sensors and sends values via serial
-  for(int k=0; k<2; k++)
-  {
-    mySerial.print(Value[k]);
-    mySerial.print('+');
-   //technically not needed but I prefer to break up data values
-    //so they are easier to see when debugging
-  }
- mySerial.print('~'); //used as an end of transmission character - used in app for string length
- mySerial.println();
- delay(1000);  
-  Serial.print('#');
-  
-  //for loop cycles through 4 sensors and sends values via serial
-  for(int k=0; k<2; k++)
-  {
-    Serial.print(Value[k]);
-    Serial.print('+');
-    //technically not needed but I prefer to break up data values
-    //so they are easier to see when debugging
-  }
- Serial.print('~'); //used as an end of transmission character - used in app for string length
- Serial.println();
- delay(10);        //added a delay to eliminate missed transmissions
 
+void checkSum()
+{
+ value1 = String(Value[1]);
+ value2 = String(Value[2]);
+ flag = 0;
+ for(i = 0; i < value1.length(); i++){
+  if(value1[i] == '.'){
+   flag = 1;
+   continue;
+  }
+  if(flag == 0)
+   integer1 += value1[i];
+  else
+   decimal1 += value1[i];
+ }
+ flag = 0;
+ for(i = 0; i < value2.length(); i++){
+  if(value2[i] == '.'){
+   flag = 1;
+   continue;
+  }
+  if(flag == 0)
+   integer2 += value2[i];
+  else
+   decimal2 += value2[i];
+ }
+ residue = (integer1 + decimal1 + integer2 + decimal2) % divisor;
+ checkSumString = "#" + value1 + "+" + value2 + "+" + residue + "~";
 }
 
 
+void sendAndroidValues()
+{
+ mySerial.print(checkSumString);
+ mySerial.println();
+ delay(1000); 
+ 
+ Serial.print('#');
+ //for loop cycles through 2 sensors and sends values via serial
+ for(int k=0; k<2; k++)
+ {
+   Serial.print(Value[k]);
+   Serial.print('+');
+   //technically not needed but I prefer to break up data values
+   //so they are easier to see when debugging
+ }
+ Serial.print(residue);
+ Serial.print('~'); //used as an end of transmission character - used in app for string length
+ Serial.println();
+ delay(10);        //added a delay to eliminate missed transmissions
+}
