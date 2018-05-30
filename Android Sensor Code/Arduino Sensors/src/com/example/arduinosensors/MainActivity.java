@@ -96,7 +96,7 @@ public class MainActivity extends Activity {
                         flag = false;
                         break;
                     }
-                    if (receivedData.charAt(i) >= '0' || receivedData.charAt(i) <= '9')
+                    if (receivedData.charAt(i) >= '0' && receivedData.charAt(i) <= '9')
                         walk++;
                     else {
                         value[step] = "0" + receivedData.substring(i - walk, i); // prevent empty string
