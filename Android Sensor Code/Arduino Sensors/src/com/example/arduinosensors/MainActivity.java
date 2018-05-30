@@ -161,34 +161,13 @@ public class MainActivity extends Activity {
                         txtString.setText("Data Received = " + dataInPrint);
                         txtStringLength.setText("String Length = " + String.valueOf(dataInPrint.length()));
 
-                        int temp = -1;
-                        float sen0 = -1, sen1 = -1;
-                        for (int i = 1; i < recDataString.length(); i++) {
-                            if (recDataString.charAt(i) == '+') {
-                                String sensor0 = recDataString.substring(1, i);//get sensor value from string between indices 1-i
-                                temp = i;
-
-                                sensorView0.setText(" 초미세먼지 (P2.5) = " + sensor0 + "㎍/㎥");
-                                sen0 = Float.parseFloat(sensor0);
-                                break;
-                            }
-                        }
-                        for (int i = temp + 1; i < recDataString.length(); i++) {
-                            if (recDataString.charAt(i) == '+') {
-                                String sensor1 = recDataString.substring(temp + 1, i);//get sensor value from string between indices temp+1 - i
-                                temp = i;
-
-                                sensorView1.setText(" 미세먼지 (P10) = " + sensor1 + "㎍/㎥");
-                                sen1 = Float.parseFloat(sensor1);
-                                break;
-                            }
-                        }
-
+                        sensorView0.setText(" 초미세먼지 (P2.5) = " + Float.toString(checkValue.data1) + "㎍/㎥");
+                        sensorView1.setText(" 미세먼지 (P10) = " + Float.toString(checkValue.data2) + "㎍/㎥");
 
                         recDataString.delete(0, recDataString.length());                    //clear all string data
                         // strIncom =" ";
                         dataInPrint = " ";
-                        AirQuality value = new AirQuality(sen0, sen1);
+                        AirQuality value = new AirQuality(checkValue.data1, checkValue.data2);
                         int stat = value.stat();
                         if (stat == 4)
                             View2.setBackgroundResource(R.drawable.best);
