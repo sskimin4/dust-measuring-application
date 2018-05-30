@@ -70,10 +70,13 @@ public class MainActivity extends Activity {
     public class CheckSum {
         StringBuilder receivedData;
         Boolean valid;
+        float data1, data2;
 
         CheckSum(StringBuilder s) {
             this.receivedData = s;
             valid = false;
+            data1 = -1;
+            data2 = -1;
         }
 
         void check() {
@@ -98,6 +101,8 @@ public class MainActivity extends Activity {
                         walk = 0;
                         step++;
                     }
+                    if (receivedData.charAt(i) == '~') // end of string
+                        break;
                 }
                 if (step < 5)
                     flag = false;
@@ -107,18 +112,13 @@ public class MainActivity extends Activity {
                     sum += Integer.parseInt(value[i]);
                 valid = sum % 64 == Integer.parseInt(value[4]);
             }
+            if(valid){
+                data1 = Integer.parseInt(value[0]) + Integer.parseInt(value[1])/100f;
+                data2 = Integer.parseInt(value[2]) + Integer.parseInt(value[3])/100f;                
+            }
+        } // end of check()
+    } // end of CheckSum class
 
-        }
-    }
-
-    public static boolean isStringDouble(String s) {
-        try {
-            Double.parseDouble(s);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
 
     TextView txtArduino, txtString, txtStringLength, sensorView0, sensorView1;
     Handler bluetoothIn;
@@ -151,12 +151,12 @@ public class MainActivity extends Activity {
 
         bluetoothIn = new Handler() {
             public void handleMessage(android.os.Message msg) {
-                if (msg.what == handlerState) {                                        //if message is what we want
-                    String readMessage = (String) msg.obj;                                                                // msg.arg1 = bytes from connect thread
-                    recDataString.append(readMessage);                                    //keep appending to string until ~
+                if (msg.what == handlerState) {                                           //if message is what we want
+                    String readMessage = (String) msg.obj;                                // msg.arg1 = bytes from connect thread
+                    recDataString.append(readMessage);  
                     CheckSum checkValue = new CheckSum(recDataString);
                     checkValue.check();
-                    if (checkValue.valid) {                                           // make sure there data before ~
+                    if (checkValue.valid) { 
                         String dataInPrint = recDataString.substring(0, recDataString.length());    // extract string
                         txtString.setText("Data Received = " + dataInPrint);
                         txtStringLength.setText("String Length = " + String.valueOf(dataInPrint.length()));
@@ -168,23 +168,18 @@ public class MainActivity extends Activity {
                                 String sensor0 = recDataString.substring(1, i);//get sensor value from string between indices 1-i
                                 temp = i;
 
-                                if (isStringDouble(sensor0)) {
-                                    sensorView0.setText(" 초미세먼지 (P2.5) = " + sensor0 + "㎍/㎥");
-                                    sen0 = Float.parseFloat(sensor0);
-                                }
+                                sensorView0.setText(" 초미세먼지 (P2.5) = " + sensor0 + "㎍/㎥");
+                                sen0 = Float.parseFloat(sensor0);
                                 break;
                             }
-
                         }
                         for (int i = temp + 1; i < recDataString.length(); i++) {
                             if (recDataString.charAt(i) == '+') {
                                 String sensor1 = recDataString.substring(temp + 1, i);//get sensor value from string between indices temp+1 - i
                                 temp = i;
 
-                                if (isStringDouble(sensor1)) {
-                                    sensorView1.setText(" 미세먼지 (P10) = " + sensor1 + "㎍/㎥");
-                                    sen1 = Float.parseFloat(sensor1);
-                                }
+                                sensorView1.setText(" 미세먼지 (P10) = " + sensor1 + "㎍/㎥");
+                                sen1 = Float.parseFloat(sensor1);
                                 break;
                             }
                         }
@@ -206,7 +201,7 @@ public class MainActivity extends Activity {
                         else if (stat == 0)
                             View2.setBackgroundResource(R.drawable.real_bad);
 
-                        value = null;
+                        value = null; // is it necessary?
                     }
                 }
             }
