@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import android.widget.Toast;
 
-
 public class MainActivity extends Activity {
 
     public class AirQuality {
@@ -67,7 +66,6 @@ public class MainActivity extends Activity {
         }
     }
 
-
     public class CheckSum {
         StringBuilder receivedData;
         Boolean valid = false;
@@ -78,13 +76,13 @@ public class MainActivity extends Activity {
             receivedData = s;
         }
 
-
         void check() {
             int size = receivedData.length();
             String[] value = new String[5];
             int step = 0; // index of value array
             int walk = 0; // digit of each integer
             int sum = 0;
+            int divisor = 64;
             boolean flag = true;
 
             Arrays.fill(value, "");
@@ -110,7 +108,7 @@ public class MainActivity extends Activity {
             if (flag) {
                 for (int i = 0; i < 4; i++)
                     sum += Integer.parseInt(value[i]);
-                valid = (sum % 64 == Integer.parseInt(value[4]));
+                valid = (sum % divisor == Integer.parseInt(value[4]));
             }
             if (valid) {
                 data1 = Integer.parseInt(value[0]) + Integer.parseInt(value[1]) / 100f;
@@ -181,11 +179,11 @@ public class MainActivity extends Activity {
                                 View2.setBackgroundResource(R.drawable.real_bad);
 
                             value = null; // is it necessary?
-                        }
+                        } // if valid
                         recDataString.delete(0, recDataString.length()); //clear all string data
                         dataInPrint = " ";
                         checkValue = null; // is it necessary?
-                    }
+                    } // if end of line > 0
                 }
             }
         };
