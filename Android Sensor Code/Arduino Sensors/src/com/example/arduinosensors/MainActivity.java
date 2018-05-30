@@ -71,15 +71,14 @@ public class MainActivity extends Activity {
 
     public class CheckSum {
         StringBuilder receivedData;
-        Boolean valid;
-        float data1, data2;
+        Boolean valid = false;
+        float data1 = -1;
+        float data2 = -1;
 
         CheckSum(StringBuilder s) {
-            this.receivedData = s;
-            valid = false;
-            data1 = -1;
-            data2 = -1;
+            receivedData = s;
         }
+
 
         void check() {
             int size = receivedData.length();
@@ -112,7 +111,7 @@ public class MainActivity extends Activity {
             if (flag) {
                 for (int i = 0; i < 4; i++)
                     sum += Integer.parseInt(value[i]);
-                valid = sum % 64 == Integer.parseInt(value[4]);
+                valid = (sum % 64 == Integer.parseInt(value[4]));
             }
             if (valid) {
                 data1 = Integer.parseInt(value[0]) + Integer.parseInt(value[1]) / 100f;
@@ -156,33 +155,37 @@ public class MainActivity extends Activity {
                 if (msg.what == handlerState) { //if message is what we want
                     String readMessage = (String) msg.obj; // msg.arg1 = bytes from connect thread
                     recDataString.append(readMessage);
-                    CheckSum checkValue = new CheckSum(recDataString);
-                    checkValue.check();
-                    if (checkValue.valid) {
+                    int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
+                    if (endOfLineIndex > 0) {
                         String dataInPrint = recDataString.substring(0, recDataString.length()); // extract string
                         txtString.setText("Data Received = " + dataInPrint);
                         txtStringLength.setText("String Length = " + String.valueOf(dataInPrint.length()));
+                        CheckSum checkValue = new CheckSum(recDataString);
+                        checkValue.check();
 
-                        sensorView0.setText(" 초미세먼지 (P2.5) = " + Float.toString(checkValue.data1) + "㎍/㎥");
-                        sensorView1.setText(" 미세먼지 (P10) = " + Float.toString(checkValue.data2) + "㎍/㎥");
+                        if (checkValue.valid) {
 
+                            sensorView0.setText(" 초미세먼지 (P2.5) = " + String.format("%.2f", checkValue.data1) + "㎍/㎥");
+                            sensorView1.setText(" 미세먼지 (P10) = " + String.format("%.2f", checkValue.data2) + "㎍/㎥");
+
+                            AirQuality value = new AirQuality(checkValue.data1, checkValue.data2);
+                            int stat = value.stat();
+                            if (stat == 4)
+                                View2.setBackgroundResource(R.drawable.best);
+                            else if (stat == 3)
+                                View2.setBackgroundResource(R.drawable.good);
+                            else if (stat == 2)
+                                View2.setBackgroundResource(R.drawable.botong);
+                            else if (stat == 1)
+                                View2.setBackgroundResource(R.drawable.bad);
+                            else if (stat == 0)
+                                View2.setBackgroundResource(R.drawable.real_bad);
+
+                            value = null; // is it necessary?
+                        }
                         recDataString.delete(0, recDataString.length()); //clear all string data
-// strIncom =" ";
                         dataInPrint = " ";
-                        AirQuality value = new AirQuality(checkValue.data1, checkValue.data2);
-                        int stat = value.stat();
-                        if (stat == 4)
-                            View2.setBackgroundResource(R.drawable.best);
-                        else if (stat == 3)
-                            View2.setBackgroundResource(R.drawable.good);
-                        else if (stat == 2)
-                            View2.setBackgroundResource(R.drawable.botong);
-                        else if (stat == 1)
-                            View2.setBackgroundResource(R.drawable.bad);
-                        else if (stat == 0)
-                            View2.setBackgroundResource(R.drawable.real_bad);
-
-                        value = null; // is it necessary?
+                        checkValue = null; // is it necessary?
                     }
                 }
             }
