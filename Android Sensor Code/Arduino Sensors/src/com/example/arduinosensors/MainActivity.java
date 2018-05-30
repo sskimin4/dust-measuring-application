@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.UUID;
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -67,6 +68,7 @@ public class MainActivity extends Activity {
         }
     }
 
+
     public class CheckSum {
         StringBuilder receivedData;
         Boolean valid;
@@ -112,9 +114,9 @@ public class MainActivity extends Activity {
                     sum += Integer.parseInt(value[i]);
                 valid = sum % 64 == Integer.parseInt(value[4]);
             }
-            if(valid){
-                data1 = Integer.parseInt(value[0]) + Integer.parseInt(value[1])/100f;
-                data2 = Integer.parseInt(value[2]) + Integer.parseInt(value[3])/100f;                
+            if (valid) {
+                data1 = Integer.parseInt(value[0]) + Integer.parseInt(value[1]) / 100f;
+                data2 = Integer.parseInt(value[2]) + Integer.parseInt(value[3]) / 100f;
             }
         } // end of check()
     } // end of CheckSum class
@@ -124,7 +126,7 @@ public class MainActivity extends Activity {
     Handler bluetoothIn;
     RelativeLayout View2;
 
-    final int handlerState = 0;                         //used to identify handler message
+    final int handlerState = 0; //used to identify handler message
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private StringBuilder recDataString = new StringBuilder();
@@ -151,21 +153,21 @@ public class MainActivity extends Activity {
 
         bluetoothIn = new Handler() {
             public void handleMessage(android.os.Message msg) {
-                if (msg.what == handlerState) {                                           //if message is what we want
-                    String readMessage = (String) msg.obj;                                // msg.arg1 = bytes from connect thread
-                    recDataString.append(readMessage);  
+                if (msg.what == handlerState) { //if message is what we want
+                    String readMessage = (String) msg.obj; // msg.arg1 = bytes from connect thread
+                    recDataString.append(readMessage);
                     CheckSum checkValue = new CheckSum(recDataString);
                     checkValue.check();
-                    if (checkValue.valid) { 
-                        String dataInPrint = recDataString.substring(0, recDataString.length());    // extract string
+                    if (checkValue.valid) {
+                        String dataInPrint = recDataString.substring(0, recDataString.length()); // extract string
                         txtString.setText("Data Received = " + dataInPrint);
                         txtStringLength.setText("String Length = " + String.valueOf(dataInPrint.length()));
 
                         sensorView0.setText(" 초미세먼지 (P2.5) = " + Float.toString(checkValue.data1) + "㎍/㎥");
                         sensorView1.setText(" 미세먼지 (P10) = " + Float.toString(checkValue.data2) + "㎍/㎥");
 
-                        recDataString.delete(0, recDataString.length());                    //clear all string data
-                        // strIncom =" ";
+                        recDataString.delete(0, recDataString.length()); //clear all string data
+// strIncom =" ";
                         dataInPrint = " ";
                         AirQuality value = new AirQuality(checkValue.data1, checkValue.data2);
                         int stat = value.stat();
@@ -186,7 +188,7 @@ public class MainActivity extends Activity {
             }
         };
 
-        btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
+        btAdapter = BluetoothAdapter.getDefaultAdapter(); // get Bluetooth adapter
         checkBTState();
     }
 
@@ -194,20 +196,20 @@ public class MainActivity extends Activity {
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
 
         return device.createRfcommSocketToServiceRecord(BTMODULEUUID);
-        //creates secure outgoing connecetion with BT device using UUID
+//creates secure outgoing connecetion with BT device using UUID
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        //Get MAC address from DeviceListActivity via intent
+//Get MAC address from DeviceListActivity via intent
         Intent intent = getIntent();
 
-        //Get the MAC address from the DeviceListActivty via EXTRA
+//Get the MAC address from the DeviceListActivty via EXTRA
         address = intent.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
 
-        //create device and set the MAC address
+//create device and set the MAC address
         BluetoothDevice device = btAdapter.getRemoteDevice(address);
 
         try {
@@ -215,21 +217,21 @@ public class MainActivity extends Activity {
         } catch (IOException e) {
             Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_LONG).show();
         }
-        // Establish the Bluetooth socket connection.
+// Establish the Bluetooth socket connection.
         try {
             btSocket.connect();
         } catch (IOException e) {
             try {
                 btSocket.close();
             } catch (IOException e2) {
-                //insert code to deal with this
+//insert code to deal with this
             }
         }
         mConnectedThread = new ConnectedThread(btSocket);
         mConnectedThread.start();
 
-        //I send a character when resuming.beginning transmission to check device is connected
-        //If it is not an exception will be thrown in the write method and finish() will be called
+//I send a character when resuming.beginning transmission to check device is connected
+//If it is not an exception will be thrown in the write method and finish() will be called
         mConnectedThread.write("x");
     }
 
@@ -237,10 +239,10 @@ public class MainActivity extends Activity {
     public void onPause() {
         super.onPause();
         try {
-            //Don't leave Bluetooth sockets open when leaving activity
+//Don't leave Bluetooth sockets open when leaving activity
             btSocket.close();
         } catch (IOException e2) {
-            //insert code to deal with this
+//insert code to deal with this
         }
     }
 
@@ -269,7 +271,7 @@ public class MainActivity extends Activity {
             OutputStream tmpOut = null;
 
             try {
-                //Create I/O streams for connection
+//Create I/O streams for connection
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
             } catch (IOException e) {
@@ -284,12 +286,12 @@ public class MainActivity extends Activity {
             byte[] buffer = new byte[256];
             int bytes;
 
-            // Keep looping to listen for received messages
+// Keep looping to listen for received messages
             while (true) {
                 try {
-                    bytes = mmInStream.read(buffer);            //read bytes from input buffer
+                    bytes = mmInStream.read(buffer); //read bytes from input buffer
                     String readMessage = new String(buffer, 0, bytes);
-                    // Send the obtained bytes to the UI Activity via handler
+// Send the obtained bytes to the UI Activity via handler
                     bluetoothIn.obtainMessage(handlerState, bytes, -1, readMessage).sendToTarget();
                 } catch (IOException e) {
                     break;
@@ -299,11 +301,11 @@ public class MainActivity extends Activity {
 
         //write method
         public void write(String input) {
-            byte[] msgBuffer = input.getBytes();           //converts entered String into bytes
+            byte[] msgBuffer = input.getBytes(); //converts entered String into bytes
             try {
-                mmOutStream.write(msgBuffer);                //write bytes over BT connection via outstream
+                mmOutStream.write(msgBuffer); //write bytes over BT connection via outstream
             } catch (IOException e) {
-                //if you cannot write, close the application
+//if you cannot write, close the application
                 Toast.makeText(getBaseContext(), "Connection Failure", Toast.LENGTH_LONG).show();
                 finish();
 
