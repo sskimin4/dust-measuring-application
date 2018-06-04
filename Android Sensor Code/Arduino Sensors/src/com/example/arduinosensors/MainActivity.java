@@ -152,9 +152,7 @@ public class MainActivity extends Activity {
                 if (msg.what == handlerState) { //if message is what we want
                     String readMessage = (String) msg.obj; // msg.arg1 = bytes from connect thread
                     recDataString.append(readMessage);
-                    // int temp = recDataString.indexOf("+");
                     int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
-                    // if (endOfLineIndex + temp > 0)
                     if (endOfLineIndex > 0) { 
                         String dataInPrint = recDataString.substring(0, recDataString.length()); // extract string
                         txtString.setText("Data Received = " + dataInPrint);
