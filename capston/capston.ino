@@ -70,27 +70,24 @@ void checkSum()
  }
  
  residue = ((integer1.toInt() + decimal1.toInt() + integer2.toInt() + decimal2.toInt()) % divisor);
- checkSumString = "#" + value1 + "+" + value2 + "+" + residue + "~";
 }
 
 
 void sendAndroidValues()
 {
- mySerial.print(checkSumString);
- mySerial.println();
- delay(1000); 
- 
- Serial.print('#');
+  mySerial.print('#');
  //for loop cycles through 2 sensors and sends values via serial
  for(int k=0; k<2; k++)
  {
-   Serial.print(Value[k]);
-   Serial.print('+');
+   mySerial.print(Value[k]);
+   mySerial.print('+');
    //technically not needed but I prefer to break up data values
    //so they are easier to see when debugging
  }
- Serial.print(residue);
- Serial.print('~'); //used as an end of transmission character - used in app for string length
- Serial.println();
- delay(10);        //added a delay to eliminate missed transmissions
+ mySerial.print(residue);
+ mySerial.print('~'); //used as an end of transmission character - used in app for string length
+ mySerial.print('~'); //used as an end of transmission character - used in app for string length
+ mySerial.print('~'); //used as an end of transmission character - used in app for string length
+ mySerial.println();
+ delay(1000); 
 }
