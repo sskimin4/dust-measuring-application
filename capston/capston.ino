@@ -65,7 +65,7 @@ void checkSum()
    decimal2 += value2[i];
  }
  residue = (integer1 + decimal1 + integer2 + decimal2) % divisor;
- checkSumString = "#" + value1 + "+" + value2 + "+" + residue + "~";
+ checkSumString = "#" + value1 + "+" + value2 + "+" + residue + "~~~";
 }
 
 
@@ -85,7 +85,7 @@ void sendAndroidValues()
    //so they are easier to see when debugging
  }
  Serial.print(residue);
- Serial.print('~'); //used as an end of transmission character - used in app for string length
+ Serial.print('~~~'); //used as an end of transmission character - used in app for string length
  Serial.println();
  delay(10);        //added a delay to eliminate missed transmissions
 }
