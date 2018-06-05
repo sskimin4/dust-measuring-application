@@ -18,8 +18,8 @@
         <activity
             android:name="com.example.arduinosensors.MainActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait"  >
-            
+            android:screenOrientation="portrait"
+           >
         </activity>
         <activity
             android:name="com.example.arduinosensors.DeviceListActivity"
@@ -30,6 +30,16 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="com.example.arduinosensors.InfoInputActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.example.arduinosensors.breathActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
         </activity>
     </application>
 
