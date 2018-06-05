@@ -8,6 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity"
     >
 
 
@@ -28,35 +29,7 @@
         android:layout_alignParentBottom="true"
         android:text=""
         android:textSize="15sp" />
-    <!--
-    <Button
-        android:id="@+id/buttonOn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="LED ON" />
 
-    <Button
-        android:id="@+id/buttonOff"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/buttonOn"
-        android:layout_alignParentRight="true"
-        android:text="LED OFF" />
-    -->
-    <!--
-    <AirQuality
-        android:id="@+id/statView"
-        android:layout_width="226dp"
-        android:layout_height="476dp"
-        android:layout_below="@+id/sensorView1"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="-235dp"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:background="@drawable/best"
-        />
-    -->
     <TextView
         android:text="sensor 1"
         android:id="@+id/sensorView1"
@@ -75,6 +48,60 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="196dp"
         android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <Button
+        android:id="@+id/inputInfoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:text="사용자 정보 입력" />
+
+    <TextView
+        android:id="@+id/ageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/genderText"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="나이" />
+
+    <TextView
+        android:id="@+id/genderText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/weightText"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="성별" />
+
+    <TextView
+        android:id="@+id/weightText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/heightText"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="몸무게" />
+
+    <TextView
+        android:id="@+id/heightText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="115dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="키" />
+
+    <Button
+        android:id="@+id/breath"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/inputInfoButton"
+        android:layout_below="@+id/heightText"
+        android:layout_marginTop="-115dp"
+        android:text="미세먼지 흡입량" />
 
 
 </RelativeLayout>
