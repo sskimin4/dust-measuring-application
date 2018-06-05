@@ -5,13 +5,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.UUID;
+
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.NotificationCompat;
+import android.view.View;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -78,7 +86,7 @@ public class MainActivity extends Activity {
 
         void check() {
             int size = receivedData.length();
-            String[] value = new String[5];
+            String[] value = new String[10];
             int step = 0; // index of value array
             int walk = 0; // digit of each integer
             int sum = 0;
@@ -111,21 +119,29 @@ public class MainActivity extends Activity {
                 valid = (sum % divisor == Integer.parseInt(value[4]));
             }
             if (valid) {
+
                 data1 = Integer.parseInt(value[0]) + Integer.parseInt(value[1]) / 100f;
                 data2 = Integer.parseInt(value[2]) + Integer.parseInt(value[3]) / 100f;
             }
+            for (int i = 0; i < 10; i++)
+                value[i] = null;
         } // end of check()
     } // end of CheckSum class
 
-
-    TextView txtArduino, txtString, txtStringLength, sensorView0, sensorView1;
+    float breath_sum = 0;
+    double cur;
+    Button btnbreath;
+    Button btnInputInfo;
+    TextView txtString, txtStringLength, sensorView0, sensorView1;
+    TextView viewAge, viewGender, viewWeight, viewHeight; // test
     Handler bluetoothIn;
     RelativeLayout View2;
-
+    UserInfo data = new UserInfo("-1", "X", "-1", "-1");
     final int handlerState = 0; //used to identify handler message
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private StringBuilder recDataString = new StringBuilder();
+    // int prev = -1;
 
     private ConnectedThread mConnectedThread;
 
@@ -140,12 +156,34 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-
+        btnbreath = (Button) findViewById(R.id.breath);
+        btnInputInfo = (Button) findViewById(R.id.inputInfoButton);
         txtString = (TextView) findViewById(R.id.txtString);
         txtStringLength = (TextView) findViewById(R.id.testView1);
         sensorView0 = (TextView) findViewById(R.id.sensorView0);
         sensorView1 = (TextView) findViewById(R.id.sensorView1);
         View2 = (RelativeLayout) findViewById(R.id.back);
+
+
+        btnInputInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, InfoInputActivity.class);
+                startActivityForResult(intent, 2);
+            }
+        });
+        btnbreath.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, breathActivity.class);
+                intent.putExtra("sum", String.format("%.2f", breath_sum));
+                startActivity(intent);
+            }
+        });
+        viewAge = (TextView) findViewById(R.id.ageText);
+        viewGender = (TextView) findViewById(R.id.genderText);
+        viewWeight = (TextView) findViewById(R.id.weightText);
+        viewHeight = (TextView) findViewById(R.id.heightText);
 
         bluetoothIn = new Handler() {
             public void handleMessage(android.os.Message msg) {
@@ -153,7 +191,7 @@ public class MainActivity extends Activity {
                     String readMessage = (String) msg.obj; // msg.arg1 = bytes from connect thread
                     recDataString.append(readMessage);
                     int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
-                    if (endOfLineIndex > 0) { 
+                    if (endOfLineIndex > 0) {
                         String dataInPrint = recDataString.substring(0, recDataString.length()); // extract string
                         txtString.setText("Data Received = " + dataInPrint);
                         txtStringLength.setText("String Length = " + String.valueOf(dataInPrint.length()));
@@ -164,9 +202,32 @@ public class MainActivity extends Activity {
 
                             sensorView0.setText(" 초미세먼지 (P2.5) = " + String.format("%.2f", checkValue.data1) + "㎍/㎥");
                             sensorView1.setText(" 미세먼지 (P10) = " + String.format("%.2f", checkValue.data2) + "㎍/㎥");
-
+                            if (Float.parseFloat(data.getAge()) != -1) {
+                                cur = -4.4244 - (0.0001367 * Float.parseFloat(data.getAge()) * Float.parseFloat(data.getAge())) + 0.05156 * Float.parseFloat(data.getHeight()) + 0.008246 * Float.parseFloat(data.getWeight());
+                                breath_sum += (checkValue.data2 * cur * 0.5) / 1000;
+                            }
                             AirQuality value = new AirQuality(checkValue.data1, checkValue.data2);
-                            int stat = value.stat();
+                            int stat = value.stat();/*
+                            if(prev<0)
+                                prev = stat;
+                            if(prev != stat){
+                                Bitmap mLargeIconForNoti = BitmapFactory.decodeResource(getResources(),R.drawable.ic_launcher);
+
+                                NotificationCompat.Builder mBuilder =
+                                        new NotificationCompat.Builder(MainActivity.this)
+                                        .setContentTitle("Noti")
+                                        .setContentText("NotiText")
+                                        .setSmallIcon(R.drawable.ic_launcher)
+                                        .setDefaults(Notification.DEFAULT_SOUND)
+                                        .setLargeIcon(mLargeIconForNoti)
+                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                        .setAutoCancel(true)
+                                        ;
+                                NotificationManager mNotificationManager =
+                                        (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                                mNotificationManager.notify(0,mBuilder.build());
+                            }
+                            prev = stat;*/
                             if (stat == 4)
                                 View2.setBackgroundResource(R.drawable.best);
                             else if (stat == 3)
@@ -179,10 +240,11 @@ public class MainActivity extends Activity {
                                 View2.setBackgroundResource(R.drawable.real_bad);
 
                             value = null; // is it necessary?
+
                         } // if valid
                         recDataString.delete(0, recDataString.length()); //clear all string data
                         dataInPrint = " ";
-                        checkValue = null; // is it necessary?
+                        checkValue = null;
                     } // if end of line > 0
                 }
             }
@@ -192,6 +254,18 @@ public class MainActivity extends Activity {
         checkBTState();
     }
 
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        if (requestCode == 2) {
+            data = intent.getParcelableExtra("info");
+            viewAge.setText(data.getAge());
+            viewGender.setText(data.getGender());
+            viewWeight.setText(data.getWeight());
+            viewHeight.setText(data.getHeight());
+        }
+    }
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
 
