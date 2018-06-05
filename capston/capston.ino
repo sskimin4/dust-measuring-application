@@ -32,16 +32,20 @@ void loop()
   error = my_sds.read(&p25, &p10);
   Value[0]=p25;
   Value[1]=p10;
+  checkSumString = "";
+  integer1 = "";
+  decimal1 = "";
+  integer2 = "";
+  decimal2 = "";
   checkSum();
   sendAndroidValues();
-  
   delay(2000);
 }
 
 void checkSum()
 {
- value1 = String(Value[1]);
- value2 = String(Value[2]);
+ value1 = String(Value[0]);
+ value2 = String(Value[1]);
  flag = 0;
  for(i = 0; i < value1.length(); i++){
   if(value1[i] == '.'){
@@ -66,21 +70,19 @@ void checkSum()
  }
  residue = (integer1 + decimal1 + integer2 + decimal2) % divisor;
  checkSumString = "#" + value1 + "+" + value2 + "+" + residue + "~~~";
+ 
+ residue = ((integer1.toInt() + decimal1.toInt() + integer2.toInt() + decimal2.toInt()) % divisor);
 }
 
 
 void sendAndroidValues()
 {
- mySerial.print(checkSumString);
- mySerial.println();
- delay(1000); 
- 
- Serial.print('#');
+  mySerial.print('#');
  //for loop cycles through 2 sensors and sends values via serial
  for(int k=0; k<2; k++)
  {
-   Serial.print(Value[k]);
-   Serial.print('+');
+   mySerial.print(Value[k]);
+   mySerial.print('+');
    //technically not needed but I prefer to break up data values
    //so they are easier to see when debugging
  }
@@ -88,4 +90,11 @@ void sendAndroidValues()
  Serial.print('~~~'); //used as an end of transmission character - used in app for string length
  Serial.println();
  delay(10);        //added a delay to eliminate missed transmissions
+=======
+ mySerial.print(residue);
+ mySerial.print('~'); //used as an end of transmission character - used in app for string length
+ mySerial.print('~'); //used as an end of transmission character - used in app for string length
+ mySerial.print('~'); //used as an end of transmission character - used in app for string length
+ mySerial.println();
+ delay(1000); 
 }

@@ -264,8 +264,149 @@ public class MainActivity extends Activity {
             viewGender.setText(data.getGender());
             viewWeight.setText(data.getWeight());
             viewHeight.setText(data.getHeight());
-        }
+=======
     }
+
+    public class CheckSum {
+        StringBuilder receivedData;
+        Boolean valid = false;
+        float data1 = -1;
+        float data2 = -1;
+
+        CheckSum(StringBuilder s) {
+            receivedData = s;
+        }
+
+    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
+
+        return device.createRfcommSocketToServiceRecord(BTMODULEUUID);
+//creates secure outgoing connecetion with BT device using UUID
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+//Get MAC address from DeviceListActivity via intent
+        Intent intent = getIntent();
+
+=======
+        void check() {
+            int size = receivedData.length();
+            String[] value = new String[5];
+            int step = 0; // index of value array
+            int walk = 0; // digit of each integer
+            int sum = 0;
+            int divisor = 64;
+            boolean flag = true;
+
+            Arrays.fill(value, "");
+            if (receivedData.charAt(0) == '#') {
+                for (int i = 1; i < size; i++) {
+                    if (step > 4) {
+                        flag = false;
+                        break;
+                    }
+                    if (receivedData.charAt(i) >= '0' && receivedData.charAt(i) <= '9')
+                        walk++;
+                    else {
+                        value[step] = "0" + receivedData.substring(i - walk, i); // prevent empty string
+                        walk = 0;
+                        step++;
+                    }
+                    if (receivedData.charAt(i) == '~') // end of string
+                        break;
+                }
+                if (step < 5)
+                    flag = false;
+            }
+            if (flag) {
+                for (int i = 0; i < 4; i++)
+                    sum += Integer.parseInt(value[i]);
+                valid = (sum % divisor == Integer.parseInt(value[4]));
+            }
+            if (valid) {
+                data1 = Integer.parseInt(value[0]) + Integer.parseInt(value[1]) / 100f;
+                data2 = Integer.parseInt(value[2]) + Integer.parseInt(value[3]) / 100f;
+            }
+        } // end of check()
+    } // end of CheckSum class
+
+
+    TextView txtArduino, txtString, txtStringLength, sensorView0, sensorView1;
+    Handler bluetoothIn;
+    RelativeLayout View2;
+
+    final int handlerState = 0; //used to identify handler message
+    private BluetoothAdapter btAdapter = null;
+    private BluetoothSocket btSocket = null;
+    private StringBuilder recDataString = new StringBuilder();
+
+    private ConnectedThread mConnectedThread;
+
+    // SPP UUID service - this should work for most devices
+    private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    // String for MAC address
+    private static String address;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        txtString = (TextView) findViewById(R.id.txtString);
+        txtStringLength = (TextView) findViewById(R.id.testView1);
+        sensorView0 = (TextView) findViewById(R.id.sensorView0);
+        sensorView1 = (TextView) findViewById(R.id.sensorView1);
+        View2 = (RelativeLayout) findViewById(R.id.back);
+
+        bluetoothIn = new Handler() {
+            public void handleMessage(android.os.Message msg) {
+                if (msg.what == handlerState) { //if message is what we want
+                    String readMessage = (String) msg.obj; // msg.arg1 = bytes from connect thread
+                    recDataString.append(readMessage);
+                    int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
+                    if (endOfLineIndex > 0) { 
+                        String dataInPrint = recDataString.substring(0, recDataString.length()); // extract string
+                        txtString.setText("Data Received = " + dataInPrint);
+                        txtStringLength.setText("String Length = " + String.valueOf(dataInPrint.length()));
+                        CheckSum checkValue = new CheckSum(recDataString);
+                        checkValue.check();
+
+                        if (checkValue.valid) {
+
+                            sensorView0.setText(" 초미세먼지 (P2.5) = " + String.format("%.2f", checkValue.data1) + "㎍/㎥");
+                            sensorView1.setText(" 미세먼지 (P10) = " + String.format("%.2f", checkValue.data2) + "㎍/㎥");
+
+                            AirQuality value = new AirQuality(checkValue.data1, checkValue.data2);
+                            int stat = value.stat();
+                            if (stat == 4)
+                                View2.setBackgroundResource(R.drawable.best);
+                            else if (stat == 3)
+                                View2.setBackgroundResource(R.drawable.good);
+                            else if (stat == 2)
+                                View2.setBackgroundResource(R.drawable.botong);
+                            else if (stat == 1)
+                                View2.setBackgroundResource(R.drawable.bad);
+                            else if (stat == 0)
+                                View2.setBackgroundResource(R.drawable.real_bad);
+
+                            value = null; // is it necessary?
+                        } // if valid
+                        recDataString.delete(0, recDataString.length()); //clear all string data
+                        dataInPrint = " ";
+                        checkValue = null; // is it necessary?
+                    } // if end of line > 0
+                }
+            }
+        };
+
+        btAdapter = BluetoothAdapter.getDefaultAdapter(); // get Bluetooth adapter
+        checkBTState();
+    }
+
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
 
@@ -318,6 +459,23 @@ public class MainActivity extends Activity {
         } catch (IOException e2) {
 //insert code to deal with this
         }
+  }
+
+    //Checks that the Android device Bluetooth is available and prompts to be turned on if off
+    private void checkBTState() {
+
+        if (btAdapter == null) {
+            Toast.makeText(getBaseContext(), "Device does not support bluetooth", Toast.LENGTH_LONG).show();
+        } else {
+            if (btAdapter.isEnabled()) {
+            } else {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 1);
+            }
+        }
+    }
+
+=======
     }
 
     //Checks that the Android device Bluetooth is available and prompts to be turned on if off
@@ -386,4 +544,6 @@ public class MainActivity extends Activity {
             }
         }
     }
+}
+=======
 }
