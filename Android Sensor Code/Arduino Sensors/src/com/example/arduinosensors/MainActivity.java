@@ -18,6 +18,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
@@ -74,6 +75,7 @@ public class MainActivity extends Activity {
         }
     }
 
+
     public class CheckSum {
         StringBuilder receivedData;
         Boolean valid = false;
@@ -82,6 +84,16 @@ public class MainActivity extends Activity {
 
         CheckSum(StringBuilder s) {
             receivedData = s;
+        }
+
+        private int parseInt(String str) {
+            try {
+                if (str.trim() != "")
+                    return Integer.parseInt(str);
+            } catch (Exception e) {
+                return 0;
+            }
+            return 0;
         }
 
         void check() {
@@ -115,18 +127,29 @@ public class MainActivity extends Activity {
             }
             if (flag) {
                 for (int i = 0; i < 4; i++)
-                    sum += Integer.parseInt(value[i]);
-                valid = (sum % divisor == Integer.parseInt(value[4]));
+                    if (value[i].trim() != "")
+                        sum += parseInt(value[i]);
+
+                if (value[4].trim() != "")
+                    valid = (sum % divisor == parseInt(value[4]));
             }
             if (valid) {
 
-                data1 = Integer.parseInt(value[0]) + Integer.parseInt(value[1]) / 100f;
-                data2 = Integer.parseInt(value[2]) + Integer.parseInt(value[3]) / 100f;
+                data1 = parseInt(value[0]) + parseInt(value[1]) / 100f;
+                data2 = parseInt(value[2]) + parseInt(value[3]) / 100f;
             }
             for (int i = 0; i < 10; i++)
                 value[i] = null;
         } // end of check()
     } // end of CheckSum class
+
+    float parseFloat(String str) {
+        try {
+            return Float.parseFloat(str);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
 
     float breath_sum = 0;
     double cur;
@@ -134,14 +157,14 @@ public class MainActivity extends Activity {
     Button btnInputInfo;
     TextView txtString, txtStringLength, sensorView0, sensorView1;
     TextView viewAge, viewGender, viewWeight, viewHeight; // test
-    Handler bluetoothIn;
+    static Handler bluetoothIn;
     RelativeLayout View2;
-    UserInfo data = new UserInfo("-1", "X", "-1", "-1");
+    UserInfo data = new UserInfo("", "", "", "");
     final int handlerState = 0; //used to identify handler message
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private StringBuilder recDataString = new StringBuilder();
-    // int prev = -1;
+    int prev = -1;
 
     private ConnectedThread mConnectedThread;
 
@@ -169,6 +192,11 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, InfoInputActivity.class);
+                intent.putExtra("age", data.getAge());
+                intent.putExtra("gender", data.getGender());
+                intent.putExtra("height", data.getHeight());
+                intent.putExtra("weight", data.getWeight());
+
                 startActivityForResult(intent, 2);
             }
         });
@@ -193,8 +221,6 @@ public class MainActivity extends Activity {
                     int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
                     if (endOfLineIndex > 0) {
                         String dataInPrint = recDataString.substring(0, recDataString.length()); // extract string
-                        txtString.setText("Data Received = " + dataInPrint);
-                        txtStringLength.setText("String Length = " + String.valueOf(dataInPrint.length()));
                         CheckSum checkValue = new CheckSum(recDataString);
                         checkValue.check();
 
@@ -202,32 +228,40 @@ public class MainActivity extends Activity {
 
                             sensorView0.setText(" 초미세먼지 (P2.5) = " + String.format("%.2f", checkValue.data1) + "㎍/㎥");
                             sensorView1.setText(" 미세먼지 (P10) = " + String.format("%.2f", checkValue.data2) + "㎍/㎥");
-                            if (Float.parseFloat(data.getAge()) != -1) {
-                                cur = -4.4244 - (0.0001367 * Float.parseFloat(data.getAge()) * Float.parseFloat(data.getAge())) + 0.05156 * Float.parseFloat(data.getHeight()) + 0.008246 * Float.parseFloat(data.getWeight());
-                                breath_sum += (checkValue.data2 * cur * 0.5) / 1000;
+                            if (data.getGender().length() == 4) {
+                                cur = -4.4244 - (0.0001367 * parseFloat(data.getAge()) * parseFloat(data.getAge())) + 0.05156 * parseFloat(data.getHeight()) + 0.008246 * parseFloat(data.getWeight());
+                                breath_sum += (checkValue.data2 * cur * 0.5) / 10000;
+                            } else if (data.getGender().length() == 6) {
+                                cur = -3.1433 - (0.0001442 * parseFloat(data.getAge()) * parseFloat(data.getAge())) + 0.04018 * parseFloat(data.getHeight()) + 0.007077 * parseFloat(data.getWeight());
+                                breath_sum += (checkValue.data2 * cur * 0.5) / 10000;
                             }
                             AirQuality value = new AirQuality(checkValue.data1, checkValue.data2);
-                            int stat = value.stat();/*
-                            if(prev<0)
+                            int stat = value.stat();
+                            //Log.d("Monji","Stat : " + stat);
+                            if (prev < 0) {
+                                //Log.d("Monji","Stat < 0 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                                 prev = stat;
-                            if(prev != stat){
-                                Bitmap mLargeIconForNoti = BitmapFactory.decodeResource(getResources(),R.drawable.ic_launcher);
+                            }
+                            if (prev != stat) {
+                                //Log.d("Monji","Stat Changed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                                Bitmap mLargeIconForNoti = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
 
                                 NotificationCompat.Builder mBuilder =
                                         new NotificationCompat.Builder(MainActivity.this)
-                                        .setContentTitle("Noti")
-                                        .setContentText("NotiText")
-                                        .setSmallIcon(R.drawable.ic_launcher)
-                                        .setDefaults(Notification.DEFAULT_SOUND)
-                                        .setLargeIcon(mLargeIconForNoti)
-                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                        .setAutoCancel(true)
-                                        ;
+                                                .setContentTitle("미세양")
+                                                .setContentText("미세먼지 상태가 바뀌었습니다.")
+                                                .setSmallIcon(R.drawable.ic_launcher)
+                                                .setDefaults(Notification.DEFAULT_SOUND)
+                                                .setLargeIcon(mLargeIconForNoti)
+                                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                                .setAutoCancel(true);
                                 NotificationManager mNotificationManager =
                                         (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                                mNotificationManager.notify(0,mBuilder.build());
+                                mNotificationManager.notify(0, mBuilder.build());
                             }
-                            prev = stat;*/
+
+                            prev = stat;
+
                             if (stat == 4)
                                 View2.setBackgroundResource(R.drawable.best);
                             else if (stat == 3)
@@ -259,154 +293,20 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
         if (requestCode == 2) {
-            data = intent.getParcelableExtra("info");
+            try {
+                data = intent.getParcelableExtra("info");
+                txtString.setText("나이 = " + data.getAge() + "       성별 = " + data.getGender());
+                txtStringLength.setText("몸무게 = " + data.getWeight() + "       키 = " + data.getHeight());
+            } catch (Exception e) {
+            }
+            /*
             viewAge.setText(data.getAge());
             viewGender.setText(data.getGender());
             viewWeight.setText(data.getWeight());
             viewHeight.setText(data.getHeight());
-=======
-    }
-
-    public class CheckSum {
-        StringBuilder receivedData;
-        Boolean valid = false;
-        float data1 = -1;
-        float data2 = -1;
-
-        CheckSum(StringBuilder s) {
-            receivedData = s;
+            */
         }
-
-    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
-
-        return device.createRfcommSocketToServiceRecord(BTMODULEUUID);
-//creates secure outgoing connecetion with BT device using UUID
     }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-//Get MAC address from DeviceListActivity via intent
-        Intent intent = getIntent();
-
-=======
-        void check() {
-            int size = receivedData.length();
-            String[] value = new String[5];
-            int step = 0; // index of value array
-            int walk = 0; // digit of each integer
-            int sum = 0;
-            int divisor = 64;
-            boolean flag = true;
-
-            Arrays.fill(value, "");
-            if (receivedData.charAt(0) == '#') {
-                for (int i = 1; i < size; i++) {
-                    if (step > 4) {
-                        flag = false;
-                        break;
-                    }
-                    if (receivedData.charAt(i) >= '0' && receivedData.charAt(i) <= '9')
-                        walk++;
-                    else {
-                        value[step] = "0" + receivedData.substring(i - walk, i); // prevent empty string
-                        walk = 0;
-                        step++;
-                    }
-                    if (receivedData.charAt(i) == '~') // end of string
-                        break;
-                }
-                if (step < 5)
-                    flag = false;
-            }
-            if (flag) {
-                for (int i = 0; i < 4; i++)
-                    sum += Integer.parseInt(value[i]);
-                valid = (sum % divisor == Integer.parseInt(value[4]));
-            }
-            if (valid) {
-                data1 = Integer.parseInt(value[0]) + Integer.parseInt(value[1]) / 100f;
-                data2 = Integer.parseInt(value[2]) + Integer.parseInt(value[3]) / 100f;
-            }
-        } // end of check()
-    } // end of CheckSum class
-
-
-    TextView txtArduino, txtString, txtStringLength, sensorView0, sensorView1;
-    Handler bluetoothIn;
-    RelativeLayout View2;
-
-    final int handlerState = 0; //used to identify handler message
-    private BluetoothAdapter btAdapter = null;
-    private BluetoothSocket btSocket = null;
-    private StringBuilder recDataString = new StringBuilder();
-
-    private ConnectedThread mConnectedThread;
-
-    // SPP UUID service - this should work for most devices
-    private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
-    // String for MAC address
-    private static String address;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_main);
-
-        txtString = (TextView) findViewById(R.id.txtString);
-        txtStringLength = (TextView) findViewById(R.id.testView1);
-        sensorView0 = (TextView) findViewById(R.id.sensorView0);
-        sensorView1 = (TextView) findViewById(R.id.sensorView1);
-        View2 = (RelativeLayout) findViewById(R.id.back);
-
-        bluetoothIn = new Handler() {
-            public void handleMessage(android.os.Message msg) {
-                if (msg.what == handlerState) { //if message is what we want
-                    String readMessage = (String) msg.obj; // msg.arg1 = bytes from connect thread
-                    recDataString.append(readMessage);
-                    int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
-                    if (endOfLineIndex > 0) { 
-                        String dataInPrint = recDataString.substring(0, recDataString.length()); // extract string
-                        txtString.setText("Data Received = " + dataInPrint);
-                        txtStringLength.setText("String Length = " + String.valueOf(dataInPrint.length()));
-                        CheckSum checkValue = new CheckSum(recDataString);
-                        checkValue.check();
-
-                        if (checkValue.valid) {
-
-                            sensorView0.setText(" 초미세먼지 (P2.5) = " + String.format("%.2f", checkValue.data1) + "㎍/㎥");
-                            sensorView1.setText(" 미세먼지 (P10) = " + String.format("%.2f", checkValue.data2) + "㎍/㎥");
-
-                            AirQuality value = new AirQuality(checkValue.data1, checkValue.data2);
-                            int stat = value.stat();
-                            if (stat == 4)
-                                View2.setBackgroundResource(R.drawable.best);
-                            else if (stat == 3)
-                                View2.setBackgroundResource(R.drawable.good);
-                            else if (stat == 2)
-                                View2.setBackgroundResource(R.drawable.botong);
-                            else if (stat == 1)
-                                View2.setBackgroundResource(R.drawable.bad);
-                            else if (stat == 0)
-                                View2.setBackgroundResource(R.drawable.real_bad);
-
-                            value = null; // is it necessary?
-                        } // if valid
-                        recDataString.delete(0, recDataString.length()); //clear all string data
-                        dataInPrint = " ";
-                        checkValue = null; // is it necessary?
-                    } // if end of line > 0
-                }
-            }
-        };
-
-        btAdapter = BluetoothAdapter.getDefaultAdapter(); // get Bluetooth adapter
-        checkBTState();
-    }
-
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
 
@@ -459,23 +359,6 @@ public class MainActivity extends Activity {
         } catch (IOException e2) {
 //insert code to deal with this
         }
-  }
-
-    //Checks that the Android device Bluetooth is available and prompts to be turned on if off
-    private void checkBTState() {
-
-        if (btAdapter == null) {
-            Toast.makeText(getBaseContext(), "Device does not support bluetooth", Toast.LENGTH_LONG).show();
-        } else {
-            if (btAdapter.isEnabled()) {
-            } else {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, 1);
-            }
-        }
-    }
-
-=======
     }
 
     //Checks that the Android device Bluetooth is available and prompts to be turned on if off
@@ -544,6 +427,4 @@ public class MainActivity extends Activity {
             }
         }
     }
-}
-=======
 }
