@@ -8,9 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity"
-    >
-
+    tools:context=".MainActivity">
 
 
     <TextView
@@ -31,30 +29,30 @@
         android:textSize="15sp" />
 
     <TextView
-        android:text="sensor 1"
         android:id="@+id/sensorView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/sensorView0"
         android:layout_centerHorizontal="true"
+        android:text="초미세먼지"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
 
     <TextView
-        android:text="sensor 0"
         android:id="@+id/sensorView0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="196dp"
+        android:text="미세먼지"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <Button
         android:id="@+id/inputInfoButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/breath"
+        android:layout_toEndOf="@+id/weightText"
         android:text="사용자 정보 입력" />
 
     <TextView
@@ -63,8 +61,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/genderText"
         android:layout_centerHorizontal="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="나이" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
         android:id="@+id/genderText"
@@ -72,8 +69,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/weightText"
         android:layout_centerHorizontal="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="성별" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
         android:id="@+id/weightText"
@@ -81,8 +77,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/heightText"
         android:layout_centerHorizontal="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="몸무게" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
         android:id="@+id/heightText"
@@ -91,16 +86,14 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="115dp"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="키" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <Button
         android:id="@+id/breath"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/inputInfoButton"
-        android:layout_below="@+id/heightText"
-        android:layout_marginTop="-115dp"
+        android:layout_above="@+id/testView1"
+        android:layout_toStartOf="@+id/ageText"
         android:text="미세먼지 흡입량" />
 
 
