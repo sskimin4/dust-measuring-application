@@ -14,19 +14,20 @@ public class breathActivity extends Activity {
     String sum;
     TextView bre_sum;
     TextView ciga;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.breath);
-        bre_sum=(TextView) findViewById(R.id.tete);
-        ciga=(TextView) findViewById(R.id.cigar);
+        bre_sum = (TextView) findViewById(R.id.tete);
+        ciga = (TextView) findViewById(R.id.cigar);
         View3 = (RelativeLayout) findViewById(R.id.bre);
         View3.setBackgroundResource(R.drawable.smoke);
-        intent=getIntent();
+        intent = getIntent();
         sum = intent.getStringExtra("sum");
         bre_sum.setText(" 흡입량: " + sum + "㎍");
-        acu= Float.parseFloat(sum);
-        acu= acu* 84/58;
-        ciga.setText("담배 흡연 시간: " + String.format("%.2f", acu) +"분");
+        acu = Float.parseFloat(sum);
+        acu = acu * 84 / 58;
+        ciga.setText("담배 흡연 시간: " + String.format("%.2f", acu) + "분");
     }
 }
